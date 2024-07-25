@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Emotion Detection</title>
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Webcam Emotion Detection</h1>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="upload-img.html">Upload Image</a></li>
+        </ul>
+    </nav>
+    <div id="liveView">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="output_canvas" width="640" height="480"></canvas>
+    </div>
+
+    <div class="blend-shapes">
+        <h2>Facial Landmarks</h2>
+        <ul class="blend-shapes-list" id="video-blend-shapes"></ul>
+    </div>
+
+    <div class="controls">
+        <button id="startButton">Start Camera</button>
+        <button id="stopButton">Stop Camera</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3"></script>
+    <script src="js/webcam.js"></script>
+</body>
+</html>

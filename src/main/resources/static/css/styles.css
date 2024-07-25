@@ -1,0 +1,65 @@
+body {
+    font-family: helvetica, arial, sans-serif;
+    margin: 2em;
+    color: #3d3d3d;
+    --mdc-theme-primary: #007f8b;
+    --mdc-theme-on-primary: #f1f3f4;
+}
+
+h1 {
+    text-align: center;
+    font-style: italic;
+    color: #007f8b;
+}
+
+nav {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    border: 1px solid black;
+}
+
+.blend-shapes-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.blend-shapes-item {
+    margin-bottom: 8px;
+}
+
+.blend-shapes-label {
+    display: inline-block;
+    width: 120px;
+}
+
+.blend-shapes-value {
+    display: inline-block;
+    background-color: #007f8b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.controls button {
+    margin: 0 10px;
+}
