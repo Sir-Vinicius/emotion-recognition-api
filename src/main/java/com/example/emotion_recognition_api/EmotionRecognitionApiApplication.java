@@ -10,14 +10,13 @@ import com.example.emotion_recognition_api.camera.CameraTest;
 
 @SpringBootApplication
 public class EmotionRecognitionApiApplication {
-
     public static void main(String[] args) {
         // Iniciar o servidor web
-        // SpringApplication.run(EmotionRecognitionApiApplication.class, args);
+        SpringApplication.run(EmotionRecognitionApiApplication.class, args);
         
         // Inicie a CameraTest
-        CameraTest cameraTest = new CameraTest(null);
-        cameraTest.start();
+        // CameraTest cameraTest = new CameraTest(null);
+        // cameraTest.start();
     }
 
     @Configuration
