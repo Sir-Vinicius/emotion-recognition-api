@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.emotion_recognition_api.camera.CameraTest;
@@ -15,7 +16,7 @@ public class EmotionRecognitionApiApplication {
         SpringApplication.run(EmotionRecognitionApiApplication.class, args);
         
         // Inicie a CameraTest
-        // CameraTest cameraTest = new CameraTest(null);
+        // CameraTest cameraTest = new CameraTest();
         // cameraTest.start();
     }
 
@@ -23,8 +24,13 @@ public class EmotionRecognitionApiApplication {
     public static class WebConfig implements WebMvcConfigurer {
         @Override
         public void addResourceHandlers(@SuppressWarnings("null") ResourceHandlerRegistry registry) {
-            registry.addResourceHandler("/static/**")
+            registry.addResourceHandler("/**")
                     .addResourceLocations("classpath:/static/");
+        }
+        @Override
+        public void addViewControllers(@SuppressWarnings("null") ViewControllerRegistry registry) {
+            // Mapeia a URL raiz para o index.html
+            registry.addViewController("/").setViewName("forward:/static/index.html");
         }
     }
 }
