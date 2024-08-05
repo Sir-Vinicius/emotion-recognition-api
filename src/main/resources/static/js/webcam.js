@@ -1,3 +1,7 @@
+import { FaceMesh } from 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.min.js';
+import { Camera } from 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js';
+import { drawConnectors, FACEMESH_TESSELATION } from 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.min.js';
+
 const video = document.getElementById('webcam');
 const canvas = document.getElementById('output_canvas');
 const canvasCtx = canvas.getContext('2d');
