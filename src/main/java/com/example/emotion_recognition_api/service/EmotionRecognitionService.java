@@ -1,26 +1,25 @@
 package com.example.emotion_recognition_api.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
-import org.jpmml.evaluator.ModelEvaluator;
-import org.jpmml.evaluator.ModelEvaluatorFactory;
 import org.jpmml.evaluator.Computable;
 import org.jpmml.evaluator.EvaluatorUtil;
+import org.jpmml.evaluator.ModelEvaluator;
+import org.jpmml.evaluator.ModelEvaluatorFactory;
 import org.jpmml.model.PMMLUtil;
-
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 import jakarta.xml.bind.JAXBException;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.ParserConfigurationException;
 
 @Service
 public class EmotionRecognitionService {
@@ -114,8 +113,8 @@ public class EmotionRecognitionService {
         for (Map.Entry<String, ?> entry : results.entrySet()) {
             String key = entry.getKey();
             Object resultValue = entry.getValue();
-            if (resultValue instanceof Computable) {
-                result.put(key, ((Computable) resultValue).getResult());
+            if (resultValue instanceof Computable computable) {
+                result.put(key, computable.getResult());
             } else {
                 result.put(key, resultValue);
             }
