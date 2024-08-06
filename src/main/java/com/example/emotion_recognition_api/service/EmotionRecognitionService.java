@@ -96,14 +96,14 @@ public class EmotionRecognitionService {
 
     private String mapEmotionToString(double emotion) {
         return switch ((int) emotion) {
-            case 0 -> "ANGER";
+            case 0 -> "NEUTRAL";  // Caso para emoção não detectada
             case 1 -> "HAPPINESS";
-            case 2 -> "NEUTRAL";
-            case 3 -> "SADNESS";
-            case 4 -> "SURPRISE";
+            case 2 -> "SADNESS/ANGER";  // Emoções combinadas
+            case 3 -> "SURPRISE";
             default -> "UNKNOWN";
         };
     }
+    
 
     private Map<String, Object> predictEmotion(Map<String, Double> input) {
         Map<String, Object> result = new HashMap<>();

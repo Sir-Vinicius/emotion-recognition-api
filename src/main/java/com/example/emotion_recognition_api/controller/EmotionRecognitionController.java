@@ -25,7 +25,7 @@ public class EmotionRecognitionController {
         this.emotionRecognitionService = emotionRecognitionService;
     }
 
-    @PostMapping("/detectEmotion")
+    @PostMapping("/detectEmotionFromLandmarks")
     public ResponseEntity<Map<String, Object>> detectEmotion(@RequestBody Map<String, Object> request) {
         Map<String, Object> response = new HashMap<>();
         
