@@ -28,7 +28,7 @@
     <div id="emotionResult">
         <p>Predicted Emotion: <span id="predicted-emotion">N/A</span></p>
         <p>Confidence: <span id="confidence">N/A</span></p>
-      </div>      
+    </div>      
 
     <div class="controls">
         <button id="startButton">Start Camera</button>
@@ -49,14 +49,14 @@
         let camera; 
 
         // Endpoint para realizar a predição de emoção
-        const predictEmotionEndpoint = '/api/detectEmotionFromLandmarks';
+        const predictEmotionEndpoint = '/detectEmotionFromLandmarks';
 
         // Configuração do MediaPipe FaceMesh
         const faceMesh = new FaceMesh({locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-          }});
+        }});
+        faceMesh.onResults(onResults);
 
-        // Verificação para quando o modelo estiver pronto
         faceMesh.onLoad = () => {
             console.log('FaceMesh model loaded');
             startDetection();
@@ -69,7 +69,6 @@
             minTrackingConfidence: 0.5
         });
 
-        // Tratamento de erro para verificar possíveis problemas
         faceMesh.onError = (error) => {
             console.error('FaceMesh error:', error);
         };
@@ -94,22 +93,24 @@
 
         // Função para processar os resultados do MediaPipe
         function onResults(results) {
-            console.log('Results received');
+            console.log('Results received:', results);
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
             canvasCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-
-            if (results.multiFaceLandmarks) {
+        
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 for (const landmarks of results.multiFaceLandmarks) {
                     drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 1 });
                     drawCustomLandmarks(canvasCtx, landmarks);
-
+        
                     // Enviar landmarks para o back-end
                     sendLandmarks(landmarks);
                 }
+            } else {
+                console.log('No landmarks detected.');
             }
             canvasCtx.restore();
-        }
+        }        
 
         // Função para desenhar linhas e pontos personalizados
         function drawCustomLandmarks(ctx, landmarks) {
@@ -117,12 +118,14 @@
                 x: landmark.x * canvas.width,
                 y: landmark.y * canvas.height
             }));
-
+        
+            console.log('Drawing landmarks:', points);
+        
             // Desenhar as linhas com base na lista de linhas
             ctx.strokeStyle = '#FF0000'; // Cor da linha
             ctx.lineWidth = 2; // Espessura da linha
             ctx.beginPath();
-
+        
             listLines.forEach(line => {
                 const [startIndex, endIndex] = line;
                 const startPoint = points[startIndex];
@@ -132,9 +135,9 @@
                     ctx.lineTo(endPoint.x, endPoint.y);
                 }
             });
-
+        
             ctx.stroke();
-
+        
             // Desenhar pontos nos landmarks
             ctx.fillStyle = '#00FF00'; // Cor do ponto
             points.forEach(point => {
@@ -142,7 +145,7 @@
                 ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
                 ctx.fill();
             });
-        }
+        }        
 
         // Função para enviar os landmarks para o back-end
         async function sendLandmarks(landmarks) {
@@ -158,7 +161,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ landmarks: formattedLandmarks }),
+                    body: JSON.stringify(formattedLandmarks), // Envia diretamente a lista de landmarks
                 });
 
                 console.log('Response received:', response.status);
@@ -174,13 +177,22 @@
             }
         }
 
+
         // Atualiza a interface do usuário com a emoção predita
         function updateUI(prediction) {
             const emotionElement = document.getElementById('predicted-emotion');
             const confidenceElement = document.getElementById('confidence');
 
             if (prediction) {
-                emotionElement.textContent = prediction.emotion;
+                // Mapeia o número da emoção para string no frontend
+                const emotionMap = {
+                    0: 'NEUTRAL',
+                    1: 'HAPPINESS',
+                    2: 'SADNESS/ANGER',
+                    3: 'SURPRISE'
+                };
+
+                emotionElement.textContent = emotionMap[prediction.emotion] || 'UNKNOWN';
                 confidenceElement.textContent = prediction.confidence.toFixed(2);
             }
         }
@@ -194,7 +206,7 @@
                 height: 480
             });
             camera.start();
-        }        
+        }
 
         // Função para parar a detecção de vídeo
         function stopDetection() {
@@ -208,7 +220,7 @@
             } else {
                 console.warn('No camera instance to stop');
             }
-        }                
+        }
 
         // Event listeners para os botões de controle da câmera
         document.getElementById('startButton').addEventListener('click', startDetection);
