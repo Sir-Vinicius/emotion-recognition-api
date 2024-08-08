@@ -154,18 +154,18 @@
                 x: landmark.x,
                 y: landmark.y
             }));
-
+        
             try {
                 const response = await fetch(predictEmotionEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formattedLandmarks), // Envia diretamente a lista de landmarks
+                    body: JSON.stringify(formattedLandmarks), // Envia a lista de landmarks diretamente
                 });
-
+        
                 console.log('Response received:', response.status);
-
+        
                 if (response.ok) {
                     const prediction = await response.json();
                     updateUI(prediction);
@@ -176,7 +176,6 @@
                 console.error('Erro ao enviar landmarks:', error);
             }
         }
-
 
         // Atualiza a interface do usuário com a emoção predita
         function updateUI(prediction) {

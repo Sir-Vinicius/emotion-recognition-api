@@ -26,28 +26,23 @@ public class EmotionRecognitionController {
     }
 
     @PostMapping("/detectEmotionFromLandmarks")
-    public ResponseEntity<Map<String, Object>> detectEmotion(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<Map<String, Object>> detectEmotion(@RequestBody List<Map<String, Double>> landmarks) {
         Map<String, Object> response = new HashMap<>();
         
-        // Obtemos os landmarks do request e garantimos que sejam do tipo esperado
-        Object landmarksObj = request.get("landmarks");
-        if (landmarksObj instanceof List<?>) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Double>> landmarks = (List<Map<String, Double>>) landmarksObj;
-            try {
-                Map<String, Object> result = emotionRecognitionService.detectEmotionFromLandmarks(landmarks);
-                response.put("emotion", result.get("emotion"));
-                response.put("confidence", result.get("confidence"));
-            } catch (Exception e) {
-                logger.error("Erro ao processar os landmarks", e);
-                response.put("error", "Erro ao processar os landmarks");
-                return ResponseEntity.status(500).body(response);
-            }
-        } else {
-            response.put("error", "Formato de dados inválido para landmarks");
-            return ResponseEntity.badRequest().body(response);
+        // Log para depuração
+        logger.info("Recebido landmarks: " + landmarks);
+        
+        try {
+            Map<String, Object> result = emotionRecognitionService.detectEmotionFromLandmarks(landmarks);
+            response.put("emotion", result.get("emotion"));
+            response.put("confidence", result.get("confidence"));
+        } catch (Exception e) {
+            logger.error("Erro ao processar os landmarks", e);
+            response.put("error", "Erro ao processar os landmarks");
+            return ResponseEntity.status(500).body(response);
         }
 
         return ResponseEntity.ok(response);
     }
+
 }

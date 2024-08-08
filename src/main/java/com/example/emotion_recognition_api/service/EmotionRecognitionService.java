@@ -38,29 +38,33 @@ public class EmotionRecognitionService {
     private ModelEvaluator<?> loadPmmlModel() throws IOException, SAXException, JAXBException, ParserConfigurationException {
         try (InputStream is = new ClassPathResource("emotion_recognition_model.pmml").getInputStream()) {
             PMML pmml = PMMLUtil.unmarshal(is);
+            System.out.println("Loaded PMML model");
             Model model = pmml.getModels().get(0);
+            System.out.println("Loaded model: " + model.getModelName());
             ModelEvaluatorFactory modelEvaluatorFactory = ModelEvaluatorFactory.newInstance();
             return modelEvaluatorFactory.newModelEvaluator(pmml, model);
         }
-    }
+    }    
 
     public Map<String, Object> detectEmotionFromLandmarks(List<Map<String, Double>> landmarks) {
         Map<String, Object> response = new HashMap<>();
         try {
             Map<String, Double> input = prepareInput(landmarks);
+            System.out.println("Input for prediction: " + input); // Adicione esta linha
             Map<String, Object> prediction = predictEmotion(input);
-
-            // Assumindo que o modelo PMML retorna chaves específicas para a emoção e confiança
+            System.out.println("Prediction result: " + prediction); // Adicione esta linha
+    
             double predictedEmotion = (Double) prediction.getOrDefault("predictedEmotion", -1.0);
             double confidence = (Double) prediction.getOrDefault("confidence", 0.0);
-
-            response.put("emotion", predictedEmotion); // Envia o número da emoção para o frontend
+    
+            response.put("emotion", predictedEmotion);
             response.put("confidence", confidence);
         } catch (Exception e) {
             response.put("error", ERROR_PROCESSING_IMAGE + ": " + e.getMessage());
         }
         return response;
     }
+    
 
     private Map<String, Double> prepareInput(List<Map<String, Double>> landmarks) {
         Map<String, Double> input = new HashMap<>();
@@ -74,14 +78,21 @@ public class EmotionRecognitionService {
 
     private Map<String, Object> predictEmotion(Map<String, Double> input) {
         Map<String, Object> result = new HashMap<>();
-        Map<String, ?> results = evaluator.evaluate(input);
-        results = EvaluatorUtil.decodeAll(results);
-
-        for (Map.Entry<String, ?> entry : results.entrySet()) {
-            String key = entry.getKey();
-            Object resultValue = entry.getValue();
-            result.put(key, resultValue);
+        try {
+            System.out.println("Input for prediction: " + input); // Adicione esta linha
+            Map<String, ?> results = evaluator.evaluate(input);
+            results = EvaluatorUtil.decodeAll(results);
+            System.out.println("Raw results: " + results); // Adicione esta linha
+     
+            for (Map.Entry<String, ?> entry : results.entrySet()) {
+                String key = entry.getKey();
+                Object resultValue = entry.getValue();
+                result.put(key, resultValue);
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao prever emoção: " + e.getMessage());
+            e.printStackTrace();
         }
         return result;
     }
-}
+}    
