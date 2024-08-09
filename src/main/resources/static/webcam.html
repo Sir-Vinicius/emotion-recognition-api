@@ -21,7 +21,7 @@
     </div>
 
     <div class="blend-shapes">
-        <h2>Facial Landmarks</h2>
+        <h2>Blend Shapes</h2>
         <ul class="blend-shapes-list" id="video-blend-shapes"></ul>
     </div>
 
@@ -49,7 +49,7 @@
         let camera; 
 
         // Endpoint para realizar a predição de emoção
-        const predictEmotionEndpoint = '/detectEmotionFromLandmarks';
+        const predictEmotionEndpoint = '/detectEmotionFromBlendshapes';
 
         // Configuração do MediaPipe FaceMesh
         const faceMesh = new FaceMesh({locateFile: (file) => {
@@ -73,38 +73,19 @@
             console.error('FaceMesh error:', error);
         };
 
-        // Lista de linhas para desenhar
-        const listLines = [
-            [130, 27], [130, 23], [27, 133], [23, 133], // olho esquerdo
-            [359, 257], [359, 253], [257, 362], [253, 362], // olho direito
-            [130, 70], [107, 168], [168, 336], [300, 359], // sobrancelhas e nariz
-            [168, 4], // nariz
-            [133, 4], [362, 4], // olhos - ponta nariz
-            [4, 50], [4, 280], // ponta nariz - bochecha
-            [4, 0], // ponta nariz - topo boca
-            [70, 105], [105, 107], [107, 108], [108, 104], [104, 71], [71, 70], // sobrancelha esquerda
-            [336, 334], [334, 300], [300, 301], [301, 333], [333, 337], [337, 336], // sobrancelha direita
-            [61, 40], [61, 91], [40, 0], [91, 17], [0, 270], [17, 321], [270, 291], [321, 291], // contorno da boca
-            [50, 61], [280, 291], // bochechas
-            [212, 216], [216, 214], [214, 207], [207, 192], [192, 197], // lado boca esquerda zig zag
-            [432, 436], [436, 434], [434, 427], [427, 416], [416, 411], // lado boca direita zig zag
-            [61, 212], [291, 432]
-        ];
-
         // Função para processar os resultados do MediaPipe
         function onResults(results) {
             console.log('Results received:', results);
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
             canvasCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-        
+
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 for (const landmarks of results.multiFaceLandmarks) {
-                    drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 1 });
-                    drawCustomLandmarks(canvasCtx, landmarks);
-        
-                    // Enviar landmarks para o back-end
-                    sendLandmarks(landmarks);
+                    drawBlendShapes(results);
+                    
+                    // Enviar blendshapes para o back-end
+                    sendBlendShapes(landmarks);
                 }
             } else {
                 console.log('No landmarks detected.');
@@ -112,56 +93,31 @@
             canvasCtx.restore();
         }        
 
-        // Função para desenhar linhas e pontos personalizados
-        function drawCustomLandmarks(ctx, landmarks) {
-            const points = landmarks.map(landmark => ({
-                x: landmark.x * canvas.width,
-                y: landmark.y * canvas.height
-            }));
-        
-            console.log('Drawing landmarks:', points);
-        
-            // Desenhar as linhas com base na lista de linhas
-            ctx.strokeStyle = '#FF0000'; // Cor da linha
-            ctx.lineWidth = 2; // Espessura da linha
-            ctx.beginPath();
-        
-            listLines.forEach(line => {
-                const [startIndex, endIndex] = line;
-                const startPoint = points[startIndex];
-                const endPoint = points[endIndex];
-                if (startPoint && endPoint) {
-                    ctx.moveTo(startPoint.x, startPoint.y);
-                    ctx.lineTo(endPoint.x, endPoint.y);
-                }
-            });
-        
-            ctx.stroke();
-        
-            // Desenhar pontos nos landmarks
-            ctx.fillStyle = '#00FF00'; // Cor do ponto
-            points.forEach(point => {
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
-                ctx.fill();
+        // Função para desenhar blendshapes
+        function drawBlendShapes(results) {
+            const blendShapes = results.multiFaceLandmarks[0].blendshapes || {};
+            const blendShapeList = document.getElementById('video-blend-shapes');
+            blendShapeList.innerHTML = '';
+
+            Object.keys(blendShapes).forEach(shape => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${shape}: ${blendShapes[shape].toFixed(2)}`;
+                blendShapeList.appendChild(listItem);
             });
         }        
 
-        // Função para enviar os landmarks para o back-end
-        async function sendLandmarks(landmarks) {
-            console.log('Sending landmarks to backend');
-            const formattedLandmarks = landmarks.map(landmark => ({
-                x: landmark.x,
-                y: landmark.y
-            }));
-        
+        // Função para enviar os blendshapes para o back-end
+        async function sendBlendShapes(faceLandmarks) {
+            console.log('Sending blendshapes to backend');
+            const blendShapes = faceLandmarks.blendshapes || {};
+
             try {
                 const response = await fetch(predictEmotionEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formattedLandmarks), // Envia a lista de landmarks diretamente
+                    body: JSON.stringify(blendShapes), // Envia a lista de blendshapes diretamente
                 });
         
                 console.log('Response received:', response.status);
@@ -173,7 +129,7 @@
                     console.error('Erro na predição:', response.statusText);
                 }
             } catch (error) {
-                console.error('Erro ao enviar landmarks:', error);
+                console.error('Erro ao enviar blendshapes:', error);
             }
         }
 
@@ -183,16 +139,16 @@
             const confidenceElement = document.getElementById('confidence');
 
             if (prediction) {
-                // Mapeia o número da emoção para string no frontend
-                const emotionMap = {
-                    0: 'NEUTRAL',
-                    1: 'HAPPINESS',
-                    2: 'SADNESS/ANGER',
-                    3: 'SURPRISE'
-                };
+                emotionElement.textContent = prediction.emotion || 'UNKNOWN';
 
-                emotionElement.textContent = emotionMap[prediction.emotion] || 'UNKNOWN';
-                confidenceElement.textContent = prediction.confidence.toFixed(2);
+                // Exibir as probabilidades de cada emoção
+                const emotionProbabilities = Object.keys(prediction).filter(key => key.startsWith('probability('));
+                if (emotionProbabilities.length > 0) {
+                    const probabilities = emotionProbabilities.map(key => `${key.replace('probability(', '').replace(')', '')}: ${(prediction[key] * 100).toFixed(2)}%`).join(', ');
+                    confidenceElement.textContent = probabilities;
+                } else {
+                    confidenceElement.textContent = 'N/A';
+                }
             }
         }
 
